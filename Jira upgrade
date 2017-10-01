@@ -1,0 +1,45 @@
+//Download jira from below link 
+
+https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-x.x.x-x64.bin
+
+//Move .jar to tmp folder
+pscp atlassian-jira-software-x.x.x-x64.bin *userID*@*SERVERNAME*:/tmp/
+
+//Stop  jira and take back up . below command for backup
+
+cp /tmp/atlassian-jira-software-x.x.x-x64.bin /opt/jira/atlassian_backups/
+
+// below command make above file executable 
+chmod 700 atlassian-jira-software-x.x.x-x64.bin
+
+//Clean old backups	
+
+cd /opt/jira/atlassian/application-data/jira/export/
+
+find . -name "*.zip" -type f -mtime +14 -exec rm {} \;
+
+//Clean old log files	
+
+find /opt/jira/atlassian/jira/logs/* -mtime +14 -exec rm {} \;
+
+find /opt/jira/atlassian/application-data/jira/log/* -mtime +30 -exec rm {} \;
+
+//Stop jira 
+/opt/jira/atlassian/jira/bin/./stop-jira.sh
+ps aux | grep jira
+
+//
+mkdir /opt/jira/atlassian_backup
+
+rsync -av /opt/jira/atlassian/jira --exclude "/opt/jira/atlassian/jira/logs" /opt/jira/atlassian_backup
+
+rsync -av /opt/jira/atlassian/application-data /opt/jira/atlassian_backup
+
+// Take  back up 
+cp /opt/jira/atlassian/jira/conf/server.xml /opt/jira/atlassian_backup/server.xml.backup
+cp /opt/jira/atlassian/jira/bin/setenv.sh /opt/jira/atlassian_backup/setenv.sh.backup
+cp /opt/jira/atlassian/application-data/jira/dbconfig.xml /opt/jira/atlassian_backup/dbconfig.xml.backup
+cp -rv /opt/jira/atlassian/jira/atlassian-jira/images/ /opt/jira/atlassian_backup/images.backup
+
+//Restore back up
+cp -r /opt/jira/atlassian_backup/images.backup /opt/jira/atlassian/jira/atlassian-jira/images
